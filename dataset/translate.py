@@ -54,7 +54,7 @@ class TranslateDataset(Dataset):
         with jsonlines.open(self.fn) as fp:
             for v in fp:
                 ret.append(v)
-        return ret[:128]
+        return ret
 
     def __getitem__(self, index) -> T_co:
         return self.content[index]["en"], self.content[index]["ch"]
