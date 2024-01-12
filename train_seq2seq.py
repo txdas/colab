@@ -4,9 +4,11 @@ import math
 from torch import nn, optim
 from dataset.translate import TranslateDataset, collate_batch
 from torch.utils.data import DataLoader
+from utils import setup_seed
 from functools import partial
 import time
 import tqdm
+import argparse
 
 
 def train(model, iterator, optimizer, criterion, clip):
@@ -83,6 +85,11 @@ def count_parameters(model):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="train a seq2seq model")
+    parser.add_argument("--seed", type=int, default=1234, help="Random seed.")
+    parser.add_argument("--epochs", type=int, default=10, help="Number of epochs to train.")
+    args = parser.parse_args()
+    setup_seed(args.seed)
     train_, test = TranslateDataset("data/Corpus/train.json"), TranslateDataset("data/Corpus/test.json")
     print("test", len(test), "train", len(train_))
     collate_fn = partial(collate_batch, vocab_en=train_.vocab_en, vocab_ch=train_.vocab_ch)
@@ -115,7 +122,7 @@ def main():
     PAD_IDX = train_.vocab_ch["<pad>"]
     criterion = nn.CrossEntropyLoss(ignore_index=PAD_IDX)
     optimizer = optim.Adam(model.parameters())
-    N_EPOCHS = 1
+    N_EPOCHS = args.epochs
     CLIP = 1
 
     best_valid_loss = float('inf')
@@ -129,7 +136,7 @@ def main():
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), 'tut4-model.pt')
 
-        print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
+        print(f'Epoch: {epoch + 1:02}/{N_EPOCHS} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
         print(f'\t Val. Loss: {valid_loss:.3f} |  Val. PPL: {math.exp(valid_loss):7.3f}')
 
