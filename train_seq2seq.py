@@ -115,7 +115,7 @@ def main():
     PAD_IDX = train_.vocab_ch["<pad>"]
     criterion = nn.CrossEntropyLoss(ignore_index=PAD_IDX)
     optimizer = optim.Adam(model.parameters())
-    N_EPOCHS = 3 
+    N_EPOCHS = 1
     CLIP = 1
 
     best_valid_loss = float('inf')

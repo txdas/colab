@@ -30,12 +30,12 @@ def yield_ch_tokens():
 
 
 def main():
-    vocab = build_vocab_from_iterator(yield_ch_tokens(), specials=["<unk>", "<pad>", "<sep>"])
+    vocab = build_vocab_from_iterator(yield_ch_tokens(), specials=["<unk>", "<pad>", "<sep>", '<sos>', '<eos>'])
     vocab.set_default_index(vocab["<unk>"])
-    torch.save(vocab, os.path.join(BASE,"./data/Corpus/vocab_ch"))
-    vocab = build_vocab_from_iterator(yield_en_tokens(), specials=["<unk>","<pad>", "<sep>"])
+    torch.save(vocab, os.path.join(BASE, "./data/Corpus/vocab_ch"))
+    vocab = build_vocab_from_iterator(yield_en_tokens(), specials=["<unk>","<pad>", "<sep>", '<sos>', '<eos>'])
     vocab.set_default_index(vocab["<unk>"])
-    torch.save(vocab, os.path.join(BASE,"./data/Corpus/vocab_en"))
+    torch.save(vocab, os.path.join(BASE, "./data/Corpus/vocab_en"))
 
 
 class TranslateDataset(Dataset):
@@ -67,8 +67,8 @@ def collate_batch(batch, vocab_en, vocab_ch):
     src_tensors, trg_tensors = [], []
     maxsrc, maxtrg, batch_size = 0, 0, 0
     for src, trg in batch:
-        src_tensor = vocab_en(en_tokenizer(src))
-        trg_tensor = vocab_ch(ch_tokenizer(trg))
+        src_tensor = [vocab_en["sos"]]+vocab_en(en_tokenizer(src))+[vocab_en["eos"]]
+        trg_tensor = [vocab_en["sos"]]+vocab_ch(ch_tokenizer(trg))+[vocab_en["eos"]]
         maxsrc = max(maxsrc, len(src_tensor))
         maxtrg = max(maxtrg, len(trg_tensor))
         src_tensors.append(src_tensor)
@@ -105,7 +105,6 @@ def train_test_split():
             train_fp.write(v)
         else:
             test_fp.write(v)
-
 
 
 if __name__ == '__main__':
