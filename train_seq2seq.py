@@ -10,6 +10,8 @@ import time
 import tqdm
 import argparse
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def train(model, iterator, optimizer, criterion, clip):
     model.train()
@@ -18,6 +20,7 @@ def train(model, iterator, optimizer, criterion, clip):
 
     for i, batch in enumerate(tqdm.tqdm(iterator, total=len(iterator))):
         src, src_len, trg = batch
+        src, src_len, trg = src.to(device),src_len.to(device),trg.to(device)
         optimizer.zero_grad()
         output = model(src, src_len, trg)
         # trg = [trg len, batch size]
@@ -108,7 +111,7 @@ def main():
     attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
     enc = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
     dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     model = Seq2Seq(enc, dec, SRC_PAD_IDX, device).to(device)
 
     def init_weights(m):
