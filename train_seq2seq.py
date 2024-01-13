@@ -55,7 +55,7 @@ def evaluate(model, iterator, criterion):
     with torch.no_grad():
         for i, batch in enumerate(iterator):
             src, src_len, trg = batch
-
+            src, src_len, trg = src.to(device), src_len.to(device), trg.to(device)
             output = model(src, src_len, trg, 0)  # turn off teacher forcing
 
             # trg = [trg len, batch size]
